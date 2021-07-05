@@ -13,6 +13,12 @@ func main() {
 
 	kcdecho.Setup() // Do not forget this part otherwise you will not be able to recover the path parameters
 
+	r.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ctx echo.Context) error {
+			ctx.Set("profile", "basic")
+			return next(ctx)
+		}
+	})
 	r.GET("/:name", kcdecho.Handler(YourHttpHandler, http.StatusOK))
 	//                          ^ Here the magic happen this is the only thing you need
 	//                            to do. Adding kcdgin.Handler(your handler)
@@ -24,6 +30,7 @@ func main() {
 type CreateCustomerInput struct {
 	Name   string   `path:"name"`
 	Emails []string `query:"emails" exploder:","`
+	Profile string `echoctx:"profile"`
 }
 
 // CustomerOutput is the output type of your handler it contain the input for simplicity.
