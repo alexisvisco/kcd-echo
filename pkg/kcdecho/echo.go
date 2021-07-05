@@ -9,6 +9,7 @@ import (
 
 func Setup() {
 	kcd.Config.StringsExtractors = append(kcd.Config.StringsExtractors, EchoPathExtractor{})
+	kcd.Config.ValueExtractors = append(kcd.Config.ValueExtractors, EchoContextExtractor{})
 }
 
 type EchoPathExtractor struct{}
@@ -32,6 +33,26 @@ func (g EchoPathExtractor) Extract(req *http.Request, res http.ResponseWriter, v
 
 func (g EchoPathExtractor) Tag() string {
 	return "path"
+}
+
+type EchoContextExtractor struct {}
+
+func (e EchoContextExtractor) Extract(req *http.Request, res http.ResponseWriter, valueOfTag string) (interface{}, error) {
+	iectx := req.Context().Value("echo-ctx")
+	if iectx == nil {
+		return nil, nil
+	}
+
+	ectx, ok := iectx.(echo.Context)
+	if !ok {
+		return nil, nil
+	}
+
+	return ectx.Get(valueOfTag), nil
+}
+
+func (e EchoContextExtractor) Tag() string {
+	return "echoctx"
 }
 
 func Handler(h interface{}, defaultStatusCode int) echo.HandlerFunc {
